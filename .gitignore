@@ -1,0 +1,6 @@
+node_modules/
+*.log
+.DS_Store
+last-result.json
+*.local
+dist/node_modules/

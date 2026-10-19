@@ -1,0 +1,12 @@
+{
+  "name": "btr-desktop-mac",
+  "private": true,
+  "version": "2026.10.19.1-d1",
+  "description": "BTR desktop adapter for the official Bilibili macOS client",
+  "scripts": {
+    "build": "node tools/build.cjs",
+    "release": "node tools/build.cjs && node tools/package-release.cjs",
+    "smoke": "node tools/client-package.cjs status /Applications/哔哩哔哩.app"
+  },
+  "license": "MIT"
+}

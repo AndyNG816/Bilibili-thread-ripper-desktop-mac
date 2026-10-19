@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  BTR Desktop macOS guard. Mirrors the Windows BTR_Guard.exe that registers a Task Scheduler
+  entry. The plist is installed to ~/Library/LaunchAgents/com.btr.desktop.guard.plist by
+  install.sh and removed by install.sh --uninstall.
+
+  The ProgramArguments point at the absolute BTR_Guard script that install.sh wrote next to
+  itself; install.sh rewrites the plist with the right path before bootstrap so a copy of
+  this repository into another directory still works.
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.btr.desktop.guard</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>__BTR_INSTALL_DIR__/BTR_Guard</string>
+    <string>watch</string>
+  </array>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><dict><key>SuccessfulExit</key><false/><key>Crashed</key><true/></dict>
+  <key>ThrottleInterval</key><integer>30</integer>
+  <key>StandardOutPath</key><string>__BTR_LOG_PATH__</string>
+  <key>StandardErrorPath</key><string>__BTR_LOG_PATH__</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key><string>/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin</string>
+  </dict>
+</dict>
+</plist>

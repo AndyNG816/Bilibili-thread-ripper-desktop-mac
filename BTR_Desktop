@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# BTR Desktop launcher entry point. Mirrors the Windows BTR_Desktop.exe; on macOS it is a
+# bash script that delegates to BTR_Desktop.cjs. When invoked from a graphical context
+# (no TTY) the wrapper opens Terminal.app so the user can see the operation's progress.
+set -euo pipefail
+
+BTR_SCRIPT_PATH="${BASH_SOURCE[0]}"
+if [[ -L "$BTR_SCRIPT_PATH" ]]; then BTR_SCRIPT_PATH="$(readlink -f "$BTR_SCRIPT_PATH")"; fi
+BTR_INSTALL_DIR="$(cd "$(dirname "$BTR_SCRIPT_PATH")" && pwd)"
+LAUNCHER="${BTR_INSTALL_DIR}/BTR_Desktop.cjs"
+
+if [[ ! -f "$LAUNCHER" ]]; then
+  echo "找不到 BTR_Desktop.cjs：$LAUNCHER" >&2
+  exit 1
+fi
+
+if [[ -t 1 ]] && [[ "${BTR_NO_TERMINAL:-0}" != "1" ]]; then
+  exec /usr/bin/env node "$LAUNCHER" "$@"
+fi
+
+# Headless context: open Terminal.app so the user sees the maintenance progress UI.
+# Re-execing inside Terminal preserves the same argv so callers (e.g. the in-client
+# renderer that spawns `BTR_Desktop uninstall --client ...`) get the same exit code
+# once Terminal quits.
+if ! command -v osascript >/dev/null 2>&1; then
+  echo "找不到 osascript，无法在无头环境下显示终端窗口" >&2
+  exit 1
+fi
+
+ESCAPED_ARGS=""
+for arg in "$@"; do
+  ESCAPED_ARGS+=" $(printf '%q' "$arg")"
+done
+CMD="clear; echo 'BTR Desktop 维护窗口'; /usr/bin/env node $(printf '%q' "$LAUNCHER")${ESCAPED_ARGS}; ec=\$?; echo; echo \"进程退出码 \$ec，按任意键关闭窗口。\"; read -n 1; exit \$ec"
+
+osascript <<EOF
+tell application "Terminal" to activate
+tell application "Terminal" to do script "${CMD//\\/\\\\}"
+EOF

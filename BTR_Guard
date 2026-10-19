@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# BTR Desktop guard entry point. Mirrors the Windows BTR_Guard.exe; on macOS it is a bash
+# script that delegates to BTR_Guard.cjs. launchd launches this via the plist installed by
+# install.sh and removed by install.sh --uninstall.
+set -euo pipefail
+
+BTR_SCRIPT_PATH="${BASH_SOURCE[0]}"
+if [[ -L "$BTR_SCRIPT_PATH" ]]; then BTR_SCRIPT_PATH="$(readlink -f "$BTR_SCRIPT_PATH")"; fi
+BTR_INSTALL_DIR="$(cd "$(dirname "$BTR_SCRIPT_PATH")" && pwd)"
+LAUNCHER="${BTR_INSTALL_DIR}/BTR_Guard.cjs"
+
+if [[ ! -f "$LAUNCHER" ]]; then
+  echo "BTR guard: launcher not found at $LAUNCHER" >&2
+  exit 1
+fi
+
+exec /usr/bin/env node "$LAUNCHER" "$@"
